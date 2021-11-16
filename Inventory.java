@@ -1,40 +1,53 @@
+import java.security.InvalidParameterException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.util.LinkedList;
+//import Vehicle;
 
 // usernames = inventoryview & inventoryadd
 // I need to convert this class to a Singleton (make constructor private and add a "getInvetory()" method which will
 // create the single Inventory object (or return it if already created)
 
 public class Inventory {
+    private static Inventory inventory;
     String url;
-    String user;
-    String password;
     Connection conn;
     Statement stmt;
     ResultSet results;
 
     public static void main(String[] args){
-        Inventory inv = new Inventory();
+        Inventory inv = Inventory.getInventory();
         LinkedList<Vehicle> searchResults = inv.getAllVehicles();
         for (Vehicle v : searchResults) {
             System.out.println(v);
         }
-        String[] searchField = {"Model"};
-        String[] searchCriteria = {"Ford"};
-        searchResults = inv.getFilteredVehicles(new SearchNode(searchField, searchCriteria, null));
+        Vehicle insertVehicle = searchResults.get(1);
+        insertVehicle.vin = "1234567890125";
+        inv.addCar(insertVehicle);
+
+        inv.updateCar("1234567890123", "type", "Sedan");
+        inv.updateCar("1234567890124", "price", 30000);
+
+        String searchField = "Model";
+        String searchCriteria = "Ford";
+        searchResults = inv.getFilteredVehicles(searchField, searchCriteria);
         for (Vehicle v : searchResults) {
             System.out.println(v);
         }
     }
 
-    Inventory() {
+    public static Inventory getInventory() {
+        if (inventory == null) {
+            inventory = new Inventory();
+        }
+        return inventory;
+    }
+
+    private Inventory() {
         url = "jdbc:mysql://localhost:3306/vehicle_inventory";
-        user = "inventoryview";
-        password = "";
         conn = null;
         stmt = null;
         results = null;
@@ -45,52 +58,249 @@ public class Inventory {
         return vehicleQuery(sql);
     }
 
-    public LinkedList<Vehicle> getFilteredVehicles(SearchNode search) {
-        // TODO: Update this with new SearchNode object; Update sql query creation to support multiple criteria
-        // Once this is written, it can become the bases of most of the remaining methods
-        String sql = "SELECT * FROM vehicle_inventory.vehicle WHERE " + search.field[0] + "=\"" + search.criteria[0] +"\";";
+    public LinkedList<Vehicle> getFilteredVehicles(String criteria, String field) {
+        String sql = "SELECT * FROM vehicle_inventory.vehicle WHERE " + criteria + "=\"" + field +"\";";
         return vehicleQuery(sql);
     }
 
-    public boolean checkUser() {
-        //TODO: write check user
-        return false;
+    public boolean checkUser(String username, String password) {
+        String sql = "SELECT user_id FROM vehicle_inventory.users WHERE user_name = \"" + username + "\" and password = \""
+                + password + "\" and active = 1;";
+        executeQuery(sql);
+        boolean valid = false;
+        try {
+            valid = results.next();
+            try { results.close(); } catch (SQLException ex) {}
+            try { stmt.close(); } catch (SQLException ex) {}
+        } catch (SQLException ex) {
+        } finally {
+            try { conn.close(); } catch (SQLException ex) {}
+        }
+        return valid;
     }
 
-    public boolean addUser() {
-        //TODO: write check user
-        return false;
+    public boolean addUser(String username, String password, boolean admin) {
+        boolean inserted = false;
+        String sql = "SELECT user_name, admin, password, active FROM vehicle_inventory.users where user_name = \"" + username + "\";";
+        executeQuery(sql);
+        try {
+            if (results.next()) {
+                try { results.close(); } catch (SQLException ex) {}
+                try { stmt.close(); } catch (SQLException ex) {}
+                try { conn.close(); } catch (SQLException ex) {}
+                throw new InvalidParameterException("Username already exists.");
+            }
+            results.moveToInsertRow();
+            results.updateString(1, username);
+            results.updateInt(2, admin ? 1 : 0);
+            results.updateString(3, password);
+            results.updateInt(4, 1);
+            results.insertRow();
+            conn.commit();
+            inserted = true;
+            try { results.close(); } catch (SQLException ex) {}
+            try { stmt.close(); } catch (SQLException ex) {}
+        } catch (SQLException ex) {
+        } finally {
+            try { conn.close(); } catch (SQLException ex) {}
+        }
+        return inserted;
     }
 
-    public boolean deactivateUser() {
-        //TODO: write deactivate user
-        return false;
+    public boolean deactivateUser(String username) {
+        boolean updated = false;
+        String sql = "SELECT user_id, user_name, active FROM vehicle_inventory.users where user_name = \"" + username + "\";";
+        executeQuery(sql);
+        try {
+            while (results.next()) {
+                results.updateInt(2, 0);
+                results.updateRow();
+                conn.commit();
+            }
+            updated = true;
+            try { results.close(); } catch (SQLException ex) {}
+            try { stmt.close(); } catch (SQLException ex) {}
+        } catch (SQLException ex) {
+        } finally {
+            try { conn.close(); } catch (SQLException ex) {}
+        }
+        return updated;
     }
 
-    // We should create a User object. It will be a simple object with a username & password. We can pass that to and
-    //  from the *User methods
-    public LinkedList<User> listUser() {
-        //TODO: write list user
-        return null;
+    public boolean activateUser(String username) {
+        boolean updated = false;
+        String sql = "SELECT user_id, user_name, active FROM vehicle_inventory.users;";
+        executeQuery(sql);
+        try {
+            while (results.next()) {
+                results.updateInt(2, 1);
+                results.updateRow();
+                conn.commit();
+            }
+            updated = true;
+            try { results.close(); } catch (SQLException ex) {}
+            try { stmt.close(); } catch (SQLException ex) {}
+        } catch (SQLException ex) {
+        } finally {
+            try { conn.close(); } catch (SQLException ex) {}
+        }
+        return updated;
     }
 
-    public boolean updateCar() {
-        //Todo: Update attributes of existing car
-        return false;
+    public boolean isUserAdmin(String username) {
+        boolean admin = false;
+        String sql = "SELECT user_name, admin FROM vehicle_inventory.users;";
+        executeQuery(sql);
+        try {
+            if (results.next()) {
+                admin = (results.getInt(2) > 0);
+            }
+            try { results.close(); } catch (SQLException ex) {}
+            try { stmt.close(); } catch (SQLException ex) {}
+        } catch (SQLException ex) {
+        } finally {
+            try { conn.close(); } catch (SQLException ex) {}
+        }
+        return admin;
     }
 
-    public boolean addCar() {
-        //Todo: Add car to database
-        return false;
+
+    public LinkedList<String> listUser() {
+        LinkedList<String> users = new LinkedList<>();
+        String sql = "SELECT user_name FROM vehicle_inventory.users;";
+        executeQuery(sql);
+        try {
+            if (results.next()) {
+                users.add(results.getString(1));
+            }
+            try { results.close(); } catch (SQLException ex) {}
+            try { stmt.close(); } catch (SQLException ex) {}
+        } catch (SQLException ex) {
+        } finally {
+            try { conn.close(); } catch (SQLException ex) {}
+        }
+        return users;
     }
 
-    public boolean addTitleHistory() {
-        //Todo: Add Title History to database
-        return false;
+    public boolean updateCar(String vin, String field, String value) {
+        boolean updated = false;
+        String sql = "SELECT vin, " + field + " FROM vehicle_inventory.vehicle WHERE vin = \"" + vin + "\"";
+        executeQuery(sql);
+        try {
+            if (results.next()) {
+                results.updateString(2, value);
+                results.updateRow();
+                conn.commit();
+                updated = true;
+            }
+            try { results.close(); } catch (SQLException ex) {}
+            try { stmt.close(); } catch (SQLException ex) {}
+        } catch (SQLException ex) { System.out.println(ex.getMessage());
+        } finally {
+            try { conn.close(); } catch (SQLException ex) {}
+        }
+        return updated;
     }
 
-    public String getTitleHistory() {
-        return null;
+    public boolean updateCar(String vin, String field, int value) {
+        boolean updated = false;
+        String sql = "SELECT vin, " + field + " FROM vehicle_inventory.vehicle WHERE vin = \"" + vin + "\"";
+        executeQuery(sql);
+        try {
+            if (results.next()) {
+                results.updateInt(2, value);
+                results.updateRow();
+                conn.commit();
+                updated = true;
+            }
+            try { results.close(); } catch (SQLException ex) {}
+            try { stmt.close(); } catch (SQLException ex) {}
+        } catch (SQLException ex) { System.out.println(ex.getMessage());
+        } finally {
+            try { conn.close(); } catch (SQLException ex) {}
+        }
+        return updated;
+    }
+
+    public boolean addCar(Vehicle vehicle) {
+        boolean inserted = false;
+        String sql = "SELECT vin, price, model, make, country, type, year, mileage, features, size, color, engine, " +
+                "fuel_economy, fuel_type, location FROM vehicle_inventory.vehicle WHERE vin = \"" + vehicle.vin + "\";";
+        executeQuery(sql);
+        try {
+            if (!results.next()) {
+                results.moveToInsertRow();
+                results.updateString(1, vehicle.vin);
+                results.updateInt(2, vehicle.price);
+                results.updateString(3, vehicle.model);
+                results.updateString(4, vehicle.make);
+                results.updateString(5, vehicle.country);
+                results.updateString(6, vehicle.type);
+                results.updateInt(7, vehicle.year);
+                results.updateInt(8, vehicle.mileage);
+                results.updateString(9, vehicle.features);
+                results.updateString(10, vehicle.size);
+                results.updateString(11, vehicle.color);
+                results.updateString(12, vehicle.engine);
+                results.updateInt(13, vehicle.fuel_economy);
+                results.updateString(14, vehicle.fuel_type);
+                results.updateInt(15, vehicle.location);
+                results.insertRow();
+                conn.commit();
+                inserted = true;
+            }
+            try { results.close(); } catch (SQLException ex) {}
+            try { stmt.close(); } catch (SQLException ex) {}
+        } catch (SQLException ex) { System.out.println(ex.getMessage());
+        } finally {
+            try { conn.close(); } catch (SQLException ex) {}
+        }
+        return inserted;
+    }
+
+    public boolean addTitleHistory(String vin, String titleHistory) {
+        boolean updated = false;
+        String sql = "SELECT title_history, vin FROM vehicle_inventory.title_history WHERE vin = \"" + vin + "\";";
+        executeQuery(sql);
+        try {
+            if (results.next()) {
+                results.updateString(1, titleHistory);
+                results.updateRow();
+                conn.commit();
+                updated = true;
+            } else {
+                results.moveToInsertRow();
+                results.updateString(1, titleHistory);
+                results.updateString(2, vin);
+                results.insertRow();
+                conn.commit();
+                updated = true;
+            }
+            try { results.close(); } catch (SQLException ex) {}
+            try { stmt.close(); } catch (SQLException ex) {}
+        } catch (SQLException ex) {
+        } finally {
+            try { conn.close(); } catch (SQLException ex) {}
+        }
+
+        return updated;
+    }
+
+    public String getTitleHistory(String vin) {
+        String titleHistory = null;
+        String sql = "SELECT title_history FROM vehicle_inventory.title_history WHERE vin = \"" + vin + "\";";
+        executeQuery(sql);
+        try {
+            if (results.next()) {
+                titleHistory = results.getString(1);
+            }
+            try { results.close(); } catch (SQLException ex) {}
+            try { stmt.close(); } catch (SQLException ex) {}
+        } catch (SQLException ex) {
+        } finally {
+            try { conn.close(); } catch (SQLException ex) {}
+        }
+        return titleHistory;
     }
 
     private Vehicle createVehicle(ResultSet results) {
@@ -118,11 +328,10 @@ public class Inventory {
     }
 
     private void executeQuery(String sql) {
-
         try {
-            conn = DriverManager.getConnection(url, user, password);
-            stmt = conn.createStatement();
-
+            conn = DriverManager.getConnection(url, "", "");
+            stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            conn.setAutoCommit(false);
             results = stmt.executeQuery(sql);
         } catch (SQLException ex) {
             results = null;
@@ -148,105 +357,5 @@ public class Inventory {
             try { conn.close(); } catch (SQLException ex) {}
         }
         return vehicleList;
-    }
-
-    // I don't really like the way this works and am trying to think of a better data structure
-    // The way it works now, the field array holds the fields to search, the criteria array holds the criteria and
-    // the searchType array holds the type (>, <, =, >=, <=)
-    // so, if the first thing to filter on was country is japan, field[0] = country, criteria[0] = japan, searchType[0] = =
-    // this feels clunky and it would probably be better design to have a three-element array that holds all of these items
-    // rather than spreading them across three separate arrays.
-    // I think I may change the input to a LinkedList<String[]> where each array in the list has three parameters that form
-    // a search
-    static class SearchNode {
-        String[] field;
-        String[] criteria;
-        String[] searchType;
-
-        SearchNode(String[] field, String[] criteria, String[] searchType){
-            this.field = field;
-            this.criteria = criteria;
-            this.searchType = searchType;
-        }
-    }
-
-    // Shell Vehicle class for testing creating objects from the database
-    static class Vehicle {
-
-        String vin;
-        int price;
-        String model;
-        String make;
-        String country;
-        String type;
-        int year;
-        int mileage;
-        String features;
-        String size;
-        String color;
-        String engine;
-        int fuel_economy;
-        String fuel_type;
-        int location;
-
-        public Vehicle(String vin, int price, String model, String make, String country, String type, int year
-                , int mileage, String features, String size, String color, String engine, int fuel_economy
-                , String fuel_type, int location) {
-            this.vin = vin;
-            this.price = price;
-            this.model = model;
-            this.make = make;
-            this.country = country;
-            this.type = type;
-            this.year = year;
-            this.mileage = mileage;
-            this.features = features;
-            this.size = size;
-            this.color = color;
-            this.engine = engine;
-            this.fuel_economy = fuel_economy;
-            this.fuel_type = fuel_type;
-            this.location = location;
-        }
-
-        @Override
-        public String toString() {
-            return "Vehicle{" +
-                    "vin='" + vin + '\'' +
-                    ", price=" + price +
-                    ", model='" + model + '\'' +
-                    ", make='" + make + '\'' +
-                    ", country='" + country + '\'' +
-                    ", type='" + type + '\'' +
-                    ", year=" + year +
-                    ", mileage=" + mileage +
-                    ", features='" + features + '\'' +
-                    ", size='" + size + '\'' +
-                    ", color='" + color + '\'' +
-                    ", engine='" + engine + '\'' +
-                    ", fuel_economy=" + fuel_economy +
-                    ", fuel_type='" + fuel_type + '\'' +
-                    ", location=" + location +
-                    '}';
-        }
-    }
-
-    static class User{
-        String username;
-        String password;
-
-        User(String username, String password, boolean hash){
-            this.username = username;
-            if (!hash) {
-                this.password = password;
-            } else {
-                hashPassword(password);
-            }
-        }
-
-        private void hashPassword(String password) {
-            // write some algorithm for converting a text password to a hashed password for storage
-            this.password = password;
-        }
     }
 }
