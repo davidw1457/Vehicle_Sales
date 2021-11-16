@@ -24,12 +24,14 @@ public class Inventory {
         for (Vehicle v : searchResults) {
             System.out.println(v);
         }
-        Vehicle insertVehicle = searchResults.get(1);
-        insertVehicle.vin = "1234567890125";
-        inv.addCar(insertVehicle);
+
 
         inv.updateCar("1234567890123", "type", "Sedan");
         inv.updateCar("1234567890124", "price", 30000);
+
+        inv.addUser("defaultUser", "p@$$w0rd1", false);
+        inv.addUser("defaultAdmin", "p@$$w0rd2", true);
+
 
         String searchField = "Model";
         String searchCriteria = "Ford";
@@ -63,44 +65,47 @@ public class Inventory {
         return vehicleQuery(sql);
     }
 
-    public boolean checkUser(String username, String password) {
-        String sql = "SELECT user_id FROM vehicle_inventory.users WHERE user_name = \"" + username + "\" and password = \""
+    public User checkUser(String username, String password) {
+        String sql = "SELECT user_id, admin FROM vehicle_inventory.users WHERE user_name = \"" + username + "\" and password = \""
                 + password + "\" and active = 1;";
         executeQuery(sql);
-        boolean valid = false;
+        User user = null;
         try {
-            valid = results.next();
+            if (results.next()) {
+                boolean admin = results.getInt(2) > 1;
+                user = new User(username, admin);
+            }
             try { results.close(); } catch (SQLException ex) {}
             try { stmt.close(); } catch (SQLException ex) {}
         } catch (SQLException ex) {
         } finally {
             try { conn.close(); } catch (SQLException ex) {}
         }
-        return valid;
+        return user;
     }
 
     public boolean addUser(String username, String password, boolean admin) {
         boolean inserted = false;
-        String sql = "SELECT user_name, admin, password, active FROM vehicle_inventory.users where user_name = \"" + username + "\";";
+        String sql = "SELECT user_id, user_name, admin, password, active FROM vehicle_inventory.users where user_name = \"" + username + "\";";
         executeQuery(sql);
         try {
             if (results.next()) {
                 try { results.close(); } catch (SQLException ex) {}
                 try { stmt.close(); } catch (SQLException ex) {}
                 try { conn.close(); } catch (SQLException ex) {}
-                throw new InvalidParameterException("Username already exists.");
+            } else {
+                results.moveToInsertRow();
+                results.updateString(2, username);
+                results.updateInt(3, admin ? 1 : 0);
+                results.updateString(4, password);
+                results.updateInt(5, 1);
+                results.insertRow();
+                conn.commit();
+                inserted = true;
             }
-            results.moveToInsertRow();
-            results.updateString(1, username);
-            results.updateInt(2, admin ? 1 : 0);
-            results.updateString(3, password);
-            results.updateInt(4, 1);
-            results.insertRow();
-            conn.commit();
-            inserted = true;
             try { results.close(); } catch (SQLException ex) {}
             try { stmt.close(); } catch (SQLException ex) {}
-        } catch (SQLException ex) {
+        } catch (SQLException ex) { System.out.println(ex.getMessage());
         } finally {
             try { conn.close(); } catch (SQLException ex) {}
         }
@@ -225,26 +230,26 @@ public class Inventory {
     public boolean addCar(Vehicle vehicle) {
         boolean inserted = false;
         String sql = "SELECT vin, price, model, make, country, type, year, mileage, features, size, color, engine, " +
-                "fuel_economy, fuel_type, location FROM vehicle_inventory.vehicle WHERE vin = \"" + vehicle.vin + "\";";
+                "fuel_economy, fuel_type, location FROM vehicle_inventory.vehicle WHERE vin = \"" + vehicle.getVin() + "\";";
         executeQuery(sql);
         try {
             if (!results.next()) {
                 results.moveToInsertRow();
-                results.updateString(1, vehicle.vin);
-                results.updateInt(2, vehicle.price);
-                results.updateString(3, vehicle.model);
-                results.updateString(4, vehicle.make);
-                results.updateString(5, vehicle.country);
-                results.updateString(6, vehicle.type);
-                results.updateInt(7, vehicle.year);
-                results.updateInt(8, vehicle.mileage);
-                results.updateString(9, vehicle.features);
-                results.updateString(10, vehicle.size);
-                results.updateString(11, vehicle.color);
-                results.updateString(12, vehicle.engine);
-                results.updateInt(13, vehicle.fuel_economy);
-                results.updateString(14, vehicle.fuel_type);
-                results.updateInt(15, vehicle.location);
+                results.updateString(1, vehicle.getVin());
+                results.updateInt(2, vehicle.getPrice());
+                results.updateString(3, vehicle.getModel());
+                results.updateString(4, vehicle.getMake());
+                results.updateString(5, vehicle.getCountry());
+                results.updateString(6, vehicle.getType());
+                results.updateInt(7, vehicle.getYear());
+                results.updateInt(8, vehicle.getMileage());
+                results.updateString(9, vehicle.getFeatures());
+                results.updateString(10, vehicle.getSize());
+                results.updateString(11, vehicle.getColor());
+                results.updateString(12, vehicle.getEngine());
+                results.updateInt(13, vehicle.getFuel_economy());
+                results.updateString(14, vehicle.getFuel_type());
+                results.updateInt(15, vehicle.getLocation());
                 results.insertRow();
                 conn.commit();
                 inserted = true;
