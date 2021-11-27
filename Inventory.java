@@ -90,9 +90,16 @@ public class Inventory {
     public LinkedList<Vehicle> getFilteredVehicles(String criteria
             , String field) {
         // SQL Query
-        String sql = "SELECT * FROM vehicle_inventory.vehicle WHERE "
-                + criteria + "=\"" + field +"\";";
-
+        String sql;
+        if (field == "features") {
+            // Wildcard match
+            sql = "SELECT * FROM vehicle_inventory.vehicle WHERE "
+                    + field + " LIKE '%" + criteria + "%';";
+        } else {
+            // Standard match
+            sql = "SELECT * FROM vehicle_inventory.vehicle WHERE "
+                    + field + "='" + criteria + "';";
+        }
         // Execute query and return results
         return vehicleQuery(sql);
     }
@@ -110,8 +117,8 @@ public class Inventory {
     public User checkUser(String username, String password) {
         // SQL Query
         String sql = "SELECT user_id, admin FROM vehicle_inventory.users " +
-                "WHERE user_name = \"" + username + "\" and password = \""
-                + password + "\" and active = 1;";
+                "WHERE user_name = '" + username + "' and password = '"
+                + password + "' and active = 1;";
 
         // execute query
         executeQuery(sql);
@@ -150,8 +157,8 @@ public class Inventory {
 
         // SQL Query
         String sql = "SELECT user_id, user_name, admin, password, active FROM" +
-                " vehicle_inventory.users where user_name = \"" + username +
-                "\";";
+                " vehicle_inventory.users where user_name = '" + username +
+                "';";
 
         // execute query
         executeQuery(sql);
@@ -195,8 +202,8 @@ public class Inventory {
         boolean updated = false;    // Track whether update is successful
         // SQL query
         String sql = "SELECT user_id, user_name, active FROM " +
-                "vehicle_inventory.users where user_name = \"" + username +
-                "\";";
+                "vehicle_inventory.users where user_name = '" + username +
+                "';";
 
         // execute query
         executeQuery(sql);
@@ -308,7 +315,7 @@ public class Inventory {
 
         // SQL query
         String sql = "SELECT vin, " + field + " FROM " +
-                "vehicle_inventory.vehicle WHERE vin = \"" + vin + "\"";
+                "vehicle_inventory.vehicle WHERE vin = '" + vin + "';";
 
         // execute query
         executeQuery(sql);
@@ -347,7 +354,7 @@ public class Inventory {
 
         // SQL query
         String sql = "SELECT vin, " + field + " FROM " +
-                "vehicle_inventory.vehicle WHERE vin = \"" + vin + "\"";
+                "vehicle_inventory.vehicle WHERE vin = '" + vin + "';";
 
         // execute query
         executeQuery(sql);
@@ -385,7 +392,7 @@ public class Inventory {
         String sql = "SELECT vin, price, model, make, country, type, year, " +
                 "mileage, features, size, color, engine, fuel_economy, " +
                 "fuel_type, location FROM vehicle_inventory.vehicle WHERE vin" +
-                " = \"" + vehicle.getVin() + "\";";
+                " = '" + vehicle.getVin() + "';";
 
         // execute query
         executeQuery(sql);
@@ -440,7 +447,7 @@ public class Inventory {
 
         // SQL query
         String sql = "SELECT title_history, vin FROM " +
-                "vehicle_inventory.title_history WHERE vin = \"" + vin + "\";";
+                "vehicle_inventory.title_history WHERE vin = '" + vin + "';";
 
         // execute query
         executeQuery(sql);
@@ -485,7 +492,8 @@ public class Inventory {
         String titleHistory = null; // title history
 
         // SQL query
-        String sql = "SELECT title_history FROM vehicle_inventory.title_history WHERE vin = \"" + vin + "\";";
+        String sql = "SELECT title_history FROM " +
+                "vehicle_inventory.title_history WHERE vin = '" + vin + "';";
 
         // execute query
         executeQuery(sql);
