@@ -4,6 +4,11 @@
 -- ------------------------------------------------------
 -- Server version	8.0.26
 
+-- execute:
+-- mysql db_name < backup-file.sql
+-- mysql vehicle_inventory < vehicle_inventory.sql
+
+
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
@@ -117,3 +122,10 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2021-11-27 18:47:11
+
+-- Create anonymous user
+
+create user ''@'localhost';
+grant select on vehicle_inventory.* to ''@'localhost';
+grant insert on vehicle_inventory.* to ''@'localhost';
+grant update on vehicle_inventory.* to ''@'localhost';
