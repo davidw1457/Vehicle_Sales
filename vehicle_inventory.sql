@@ -69,7 +69,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'defaultUser',0,'p@$$w0rd1',1),(2,'defaultAdmin',1,'p@$$w0rd2',1),(3,'0',0,'password',1);
+INSERT INTO `users` VALUES (1,'defaultUser',0,'p@$$w0rd1',1),(2,'defaultAdmin',1,'p@$$w0rd2',1);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 
