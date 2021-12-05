@@ -1,20 +1,20 @@
 public class Vehicle {
 
-    private String vin;         // Vehicle Identification Number
-    private int price;          // price of vehicle
-    private String model;       // model of vehicle
-    private String make;        // make of vehicle
-    private String country;     // country of origin
-    private String type;        // type of vehicle (e.g. coupe, truck, etc)
-    private int year;           // year of manufacture
-    private int mileage;        // vehicle mileage
-    private String features;    // optional features
-    private String size;        // size of vehicle (standard, mid-size, etc)
-    private String color;       // color of vehicle
-    private String engine;      // engine type
-    private int fuel_economy;   // average miles per gallon
-    private String fuel_type;   // fuel type (standard, diesel, etc)
-    private int location;       // zip code where vehicle is located
+    private final String vin;         // Vehicle Identification Number
+    private final int price;          // price of vehicle
+    private final String model;       // model of vehicle
+    private final String make;        // make of vehicle
+    private final String country;     // country of origin
+    private final String type;        // type of vehicle (e.g. coupe, truck, etc)
+    private final int year;           // year of manufacture
+    private final int mileage;        // vehicle mileage
+    private final String features;    // optional features
+    private final String size;        // size of vehicle (standard, mid-size, etc)
+    private final String color;       // color of vehicle
+    private final String engine;      // engine type
+    private final int fuel_economy;   // average miles per gallon
+    private final String fuel_type;   // fuel type (standard, diesel, etc)
+    private final int location;       // zip code where vehicle is located
 
     /***************************************************************************
      * Vehicle
@@ -24,11 +24,11 @@ public class Vehicle {
      * @param model         // model of vehicle
      * @param make          // make of vehicle
      * @param country       // country of origin
-     * @param type          // type of vehicle (e.g. coupe, truck, etc)
+     * @param type          // type of vehicle (e.g. coupe, truck, etc.)
      * @param year          // year of manufacture
      * @param mileage       // vehicle mileage
      * @param features      // optional features
-     * @param size          // size of vehicle (standard, mid-size, etc)
+     * @param size          // size of vehicle (standard, mid-size, etc.)
      * @param color         // color of vehicle
      * @param engine        // engine type
      * @param fuel_economy  // average miles per gallon
@@ -103,7 +103,7 @@ public class Vehicle {
 
     /***************************************************************************
      * getType
-     * Get type (sedan, coupe, truck, etc) of vehicle
+     * Get type (sedan, coupe, truck, etc.) of vehicle
      * @return  String type
      **************************************************************************/
     public String getType() {
@@ -139,7 +139,7 @@ public class Vehicle {
 
     /***************************************************************************
      * getSize
-     * Get size (mid-size, full-size, etc) of vehicle
+     * Get size (mid-size, full-size, etc.) of vehicle
      * @return  String size
      **************************************************************************/
     public String getSize() {
@@ -196,9 +196,9 @@ public class Vehicle {
      * Update database to reflect sale of vehicle to User
      * @param user  User who is purchasing car
      **************************************************************************/
-    public void sell(User user) {
+    public boolean sell(User user) {
         // update car in Inventory
-        Inventory.getInventory().updateCar(vin, "sold", user.getUsername());
+        return Inventory.getInventory().updateCar(vin, "sold", user.getUsername());
     }
 
     /***************************************************************************

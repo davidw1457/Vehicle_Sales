@@ -1,6 +1,6 @@
 public class User {
-    private String username;    // username
-    private boolean admin;      // true if user is admin
+    private final String username;    // username
+    private final boolean admin;      // true if user is admin
 
     /***************************************************************************
      * User

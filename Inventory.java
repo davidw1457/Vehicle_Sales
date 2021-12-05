@@ -9,10 +9,10 @@ import java.util.LinkedList;
 
 public class Inventory {
     private static Inventory inventory; // singleton Inventory object
-    String url;                         // address to MySQL server
-    Connection conn;                    // SQL connection
-    Statement stmt;                     // SQL statement
-    ResultSet results;                  // SQL result set
+    private final String url;                         // address to MySQL server
+    private Connection conn;                    // SQL connection
+    private Statement stmt;                     // SQL statement
+    private ResultSet results;                  // SQL result set
 
     public static void main(String[] args){
         Inventory inv = Inventory.getInventory();
@@ -21,17 +21,11 @@ public class Inventory {
             System.out.println(v);
         }
 
+        System.out.println();
 
-        inv.updateCar("1234567890123", "type", "Sedan");
-        inv.updateCar("1234567890124", "price", 30000);
-
-        inv.addUser("defaultUser", "p@$$w0rd1", false);
-        inv.addUser("defaultAdmin", "p@$$w0rd2", true);
-
-
-        String searchField = "Model";
+        String searchField = "Make";
         String searchCriteria = "Ford";
-        searchResults = inv.getFilteredVehicles(searchField, searchCriteria);
+        searchResults = inv.getFilteredVehicles(searchCriteria, searchField);
         for (Vehicle v : searchResults) {
             System.out.println(v);
         }
@@ -91,7 +85,7 @@ public class Inventory {
             , String field) {
         // SQL Query
         String sql;
-        if (field == "features") {
+        if (field.equals("features")) {
             // Wildcard match
             sql = "SELECT * FROM vehicle_inventory.vehicle WHERE "
                     + field + " LIKE '%" + criteria + "%';";
@@ -100,6 +94,26 @@ public class Inventory {
             sql = "SELECT * FROM vehicle_inventory.vehicle WHERE "
                     + field + "='" + criteria + "';";
         }
+        // Execute query and return results
+        return vehicleQuery(sql);
+    }
+
+    /***************************************************************************
+     * getFilteredVehicles
+     * Get a LinkedList of all Vehicles available for sale that match the given
+     *      search criteria
+     * @param criteria  Criteria to search for
+     * @param field     Field to be searched
+     * @return  LinkedList<Vehicle></Vehicle> of available vehicle matching
+     *              criteria if successful, null if unsuccessful
+     **************************************************************************/
+    public LinkedList<Vehicle> getFilteredVehicles(int criteria
+            , String field) {
+        // SQL Query
+        String sql;
+        sql = "SELECT * FROM vehicle_inventory.vehicle WHERE "
+                    + field + "=" + criteria + ";";
+
         // Execute query and return results
         return vehicleQuery(sql);
     }
@@ -129,7 +143,7 @@ public class Inventory {
         try {
             if (results.next()) { // username/password correct
                 // check if user is admin and create User
-                boolean admin = results.getInt(2) > 1;
+                boolean admin = results.getInt(2) > 0;
                 user = new User(username, admin);
             }
             // Close ResultSet, Statement, and Connection
@@ -240,7 +254,7 @@ public class Inventory {
 
         // SQL query
         String sql = "SELECT user_id, user_name, active FROM " +
-                "vehicle_inventory.users;";
+                "vehicle_inventory.users WHERE user_name = '" + username + "';";
 
         // execute query
         executeQuery(sql);
@@ -568,7 +582,7 @@ public class Inventory {
     }
 
     /***************************************************************************
-     * vechicleQuery
+     * vehicleQuery
      * Create and return a LinkedList of Vehicles based on results from SQL
      *      query
      * @param sql   SQL query to execute
