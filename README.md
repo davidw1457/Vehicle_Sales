@@ -1,4 +1,21 @@
 # Vehicle_Sales
+/*******************************************************************************
+ * Arielle Gilmore
+ * Courtney Geer Ahaus
+ * Carlos Del Valle
+ * David Williams
+ * Mandelson Acabado
+ * CPSC 4360
+ * Professor: Dr. Stefan Andrei
+ * Group Project
+ * Due: December 5, 2021
+ * This is a simple automobile sales application for a car dealership. It will
+ *      allow a user to browse, search, and purchase or sell a car. Admin users
+ *      can also activate, deactivate, list, and add users and edit existing
+ *      vehicles. The program is written in Java and uses a MySQL back-end
+ *      database to store the vehicle inventory and user credentials.
+ ******************************************************************************/
+
 
 The program is written and tested in Java 13 and MySQL 8.0.26 on Windows 10 and 11, using IntelliJ IDEA IDE.
 
