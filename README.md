@@ -1,5 +1,6 @@
 # Vehicle_Sales
 /*******************************************************************************
+
   Arielle Gilmore
   Courtney Geer Ahaus
   Carlos Del Valle
@@ -14,14 +15,18 @@
        can also activate, deactivate, list, and add users and edit existing
        vehicles. The program is written in Java and uses a MySQL back-end
        database to store the vehicle inventory and user credentials.
+ 
  ******************************************************************************/
 
 
-The program is written and tested in Java 13 and MySQL 8.0.26 on Windows 10 and 11, using IntelliJ IDEA IDE.
+The program is written and tested in Java 13 and MySQL 8.0.26 on Windows 10 and 11, using IntelliJ IDEA IDE. It
+requires the MySQL JDBC connector J. The class path must include the path the this jar to connect to MySQL.
 
 The backup of the sample sql database is included in vehicle_inventory.sql. Restore to vehicle_inventory using
 mysqladmin -u root -p create vehicle_inventory
 mysql -u root -p vehilce_inventory < vehilce_inventory.sql
+
+When compiling, include the 
 
 The program expects the sql database to be running on the localhost at port 3306. You will also need to create
 anonymous users with select, update, and insert permissions with the following sql commnads:
