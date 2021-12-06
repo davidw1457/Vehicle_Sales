@@ -6,7 +6,11 @@ import java.sql.ResultSet;
 import java.util.LinkedList;
 
 /*******************************************************************************
+ * Arielle Gilmore
+ * Courtney Geer Ahaus
+ * Carlos Del Valle
  * David Williams
+ * Mandelson Acabado
  * CPSC 4360
  * Professor: Dr. Stefan Andrei
  * Group Project
@@ -236,7 +240,7 @@ public class Inventory {
         try {
             if (results.next()) {    // User found
                 // Update user to inactive
-                results.updateInt(2, 0);
+                results.updateInt(3, 0);
                 results.updateRow();
                 conn.commit();
 
@@ -273,7 +277,7 @@ public class Inventory {
         try {
             if (results.next()) { // user found
                 // Update user to active
-                results.updateInt(2, 1);
+                results.updateInt(3, 1);
                 results.updateRow();
                 conn.commit();
 

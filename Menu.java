@@ -2,7 +2,11 @@ import java.util.LinkedList;
 import java.util.Scanner;
 
 /*******************************************************************************
+ * Arielle Gilmore
+ * Courtney Geer Ahaus
+ * Carlos Del Valle
  * David Williams
+ * Mandelson Acabado
  * CPSC 4360
  * Professor: Dr. Stefan Andrei
  * Group Project
