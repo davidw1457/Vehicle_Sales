@@ -125,7 +125,7 @@ UNLOCK TABLES;
 
 -- Create anonymous user
 
-create user ''@'localhost';
-grant select on vehicle_inventory.* to ''@'localhost';
-grant insert on vehicle_inventory.* to ''@'localhost';
-grant update on vehicle_inventory.* to ''@'localhost';
+-- CREATE USER ''@'localhost';
+-- GRANT SELECT on vehicle_inventory.* to ''@'localhost';
+-- GRANT INSERT on vehicle_inventory.* to ''@'localhost';
+-- GRANT UPDATE on vehicle_inventory.* to ''@'localhost';
